@@ -1,0 +1,26 @@
+{
+  "name": "agentic-payment",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agentic Payment Operations System",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:up": "docker-compose up -d postgres redis temporal",
+    "db:down": "docker-compose down",
+    "db:migrate": "pnpm --filter @agentic-payment/api db:migrate"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.4",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

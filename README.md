@@ -1,178 +1,297 @@
 # Agentic Payment System
 
-> **Turning payments operations into autonomous, intelligent infrastructure.**
+An autonomous payment repair and dispute resolution system that automatically recovers failed payments through intelligent retry strategies, customer outreach, and human-in-the-loop escalation.
 
-An autonomous payments operations system for merchants—upgrading payments from **"API + Dashboard"** to **"Agents + Verifiable Authorization + Auditable Actions."**
+## Overview
 
-## 🎯 Overview
+This system implements an **Agentic Payment Repair Pipeline** that:
 
-Stripe turned payments into programmable financial infrastructure; this project turns payments operations into autonomous, intelligent infrastructure.
+1. **Ingests** payment failure webhooks from payment service providers (Stripe, etc.)
+2. **Classifies** failures using rules-based and LLM-enhanced analysis
+3. **Determines** appropriate recovery actions via configurable playbooks
+4. **Executes** actions within merchant-defined mandate boundaries
+5. **Tracks** all decisions in an immutable audit log
 
-### Core Value Proposition
+## Architecture
 
-- **Stripe/Cybersource strengths**: acquiring/gateway capabilities, broad payments product suite, risk & compliance, developer experience
-- **Our strengths**: let the system "get the work done" — within an authorized scope, autonomously execute multi-step workflows such as *routing, payment repair, reconciliation, refunds/disputes collaboration, compliance evidence collection, and cost optimization* — with full auditability, rollback, and control.
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Agentic Payment System                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐  │
+│  │   Stripe    │    │   Webhook   │    │  Context    │    │  Playbook   │  │
+│  │   Webhook   │───▶│  Ingestion  │───▶│ Enrichment  │───▶│   Engine    │  │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘  │
+│                                                                   │         │
+│                                                                   ▼         │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐  │
+│  │   Audit     │    │   Action    │    │  Mandate    │    │ Classifier  │  │
+│  │    Log      │◀───│  Executor   │◀───│   Layer     │◀───│   Service   │  │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-## 📋 Key Concepts
-
-### Three Layers of "Agentic"
-
-| Layer | Name | Description |
-|-------|------|-------------|
-| **L1** | Agentic Ops | Autonomous payments operations (repair, reconciliation, disputes, refunds) |
-| **L2** | Agentic Orchestration | Smart routing with explainable strategies + controlled autonomy |
-| **L3** | Agentic Mandate | Verifiable authorization/intent layer — the real moat |
-
-### Core Modules
-
-1. **Autonomous Payment Repair** — Identify failure reasons, choose actions within authorization, close the loop
-2. **Autonomous Reconciliation** — Auto-generate matching rules, detect anomalies, propose accounting entries
-3. **Autonomous Dispute Workbench** — Pull evidence, generate scheme-specific packs, deadline tracking
-4. **Autonomous Refunds & Exceptions** — Approve/deny/escalate based on policy + risk signals
-
-## 🚀 MVP Focus
-
-The project targets two shippable closed loops in ~90 days:
-
-### 1. Payment Repair MVP
-- **Input**: failure event + context
-- **Decision**: choose repair action
-- **Execution**: tool calls
-- **Outcome**: success/cost/side effects
-- **Learning**: persist action→outcome as policy signals
-
-**Key Metrics**:
-- Recovered successful amount / recoverable failed amount
-- Auth success uplift
-- Mean time-to-repair (TTR)
-- Reduction in manual tickets
-
-### 2. Dispute Autonomy MVP
-- **Input**: dispute event + case context
-- **Collect**: evidence gathering
-- **Generate**: evidence pack/narrative
-- **Submit/Remind**: deadline tracking
-- **Outcome**: win/loss + reason
-
-**Key Metrics**:
-- Net dispute loss rate reduction
-- Win-rate improvement
-- Minutes of human time per dispute case
-- Overdue rate near zero
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 AgenticPayment/
-├── README.md                                           # This file
-├── Agentic Payment System for Merchants - Polished Concept (EN).md  # Full concept document
-├── Payment Repair & Dispute Autonomy MVP Roadmap (EN).md            # 12-week MVP roadmap
-├── fei-unknown-*.md                                    # Design/review notes
-├── gstack-sketch-*                                     # UI sketches
-└── AgenticPaymentDemo/                                 # Web demo application
-    ├── src/
-    │   ├── components/         # React components
-    │   │   ├── AppShell.tsx    # Main app layout
-    │   │   ├── ErrorBoundary.tsx
-    │   │   └── ui/             # UI primitives (shadcn/ui)
-    │   ├── contexts/           # React contexts
-    │   ├── hooks/              # Custom hooks
-    │   ├── lib/                # Utilities and mock data
-    │   └── pages/              # Page components
-    │       ├── Home.tsx        # Dashboard home
-    │       ├── Repair.tsx      # Payment repair queue
-    │       ├── Disputes.tsx    # Dispute management
-    │       ├── Settings.tsx    # Configuration
-    │       └── NotFound.tsx    # 404 page
-    ├── package.json
-    └── vite.config.ts
+├── packages/
+│   ├── shared/           # Shared types, schemas, and constants
+│   │   └── src/
+│   │       ├── types.ts      # TypeScript type definitions
+│   │       ├── schemas.ts    # Zod validation schemas
+│   │       └── constants.ts  # System constants and mappings
+│   │
+│   ├── api/              # Fastify REST API server
+│   │   └── src/
+│   │       ├── index.ts          # Main server entry point
+│   │       ├── db/
+│   │       │   ├── schema.sql    # PostgreSQL database schema
+│   │       │   └── index.ts      # Database connection pool
+│   │       ├── routes/
+│   │       │   └── webhooks.ts   # Stripe webhook handler
+│   │       └── services/
+│   │           ├── mandate.ts    # Mandate validation service
+│   │           ├── classifier.ts # Failure classification service
+│   │           └── playbook.ts   # Playbook rule engine
+│   │
+│   ├── workers/          # BullMQ background workers (planned)
+│   └── temporal/         # Temporal workflows (planned)
+│
+├── AgenticPaymentDemo/   # React frontend dashboard
+├── docker-compose.yml    # Local development infrastructure
+├── turbo.json           # Turborepo build configuration
+└── package.json         # Root workspace configuration
 ```
 
-## 🎮 Demo Application
+## Key Components
 
-The `AgenticPaymentDemo/` folder contains a React-based web demo showcasing:
+### 1. Mandate Layer (Policy Firewall)
 
-- **Payment Repair Console** — Queue, case details, recommendations, approvals
-- **Dispute Workbench** — Case queue, evidence collection, evidence pack generation
-- **Audit Log** — Full action history with explanations
-- **Mock Mandate/Intent Receipts** — Authorization layer demonstration
+The mandate layer acts as a policy firewall that validates every action before execution:
 
-### Tech Stack
+- **Action Allowlist**: Only permitted actions can be executed
+- **Amount Limits**: Maximum transaction amounts per action type
+- **Retry Limits**: Maximum retry attempts per payment
+- **Validity Period**: Mandates have expiration dates
+- **3DS Requirements**: Optional 3D Secure acknowledgment for high-value transactions
 
-- **React 19** with TypeScript
-- **Vite** for fast development
-- **Tailwind CSS v4** for styling
-- **shadcn/ui** components (Radix UI primitives)
-- **Recharts** for data visualization
-- **Wouter** for routing
-- **Framer Motion** for animations
+### 2. Classifier Service
 
-### Quick Start
+Maps payment failure codes to internal failure types:
+
+- **Soft Declines**: Temporary failures (insufficient funds, bank unavailable)
+- **Hard Declines**: Permanent failures (lost card, stolen card, expired card)
+- **Risk Blocks**: Fraud detection triggers
+
+### 3. Playbook Engine
+
+Rule-based action selection with priority ordering:
+
+- Match failure types to recovery strategies
+- Consider retry history and amount thresholds
+- Support for payroll proximity logic
+- Configurable autonomy modes (auto, approve, manual)
+
+### 4. Audit Log
+
+Immutable, hash-chained audit trail:
+
+- Every decision is logged with full context
+- Hash chain ensures tamper detection
+- Append-only design for compliance
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm 8+
+- Docker and Docker Compose
+- PostgreSQL 15+
+- Redis 7+
+
+### Installation
 
 ```bash
-cd AgenticPaymentDemo
-
 # Install dependencies
 pnpm install
 
-# Start development server
+# Start infrastructure
+docker-compose up -d
+
+# Run database migrations
+pnpm --filter @agentic-payment/api db:migrate
+
+# Start development servers
 pnpm dev
-
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
 ```
 
-## 📚 Documentation
+### Environment Variables
 
-| Document | Description |
-|----------|-------------|
-| [Polished Concept (EN)](./Agentic%20Payment%20System%20for%20Merchants%20-%20Polished%20Concept%20(EN).md) | Full product concept, differentiation strategy, market positioning |
-| [MVP Roadmap (EN)](./Payment%20Repair%20%26%20Dispute%20Autonomy%20MVP%20Roadmap%20(EN).md) | 12-week delivery plan with detailed milestones |
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=agentic_payment
+DB_USER=agentic
+DB_PASSWORD=agentic_dev_password
 
-## 🎯 Target Customers
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
-1. **Mid/large online merchants** — multi-region, multi-currency, multi-PSP, success-rate/cost sensitive
-2. **Platforms / marketplaces** — pay-ins and payouts, compliance and dispute costs
-3. **Subscription / dunning-heavy merchants** — retry/recovery, revenue retention
-4. **High-chargeback verticals** — digital goods, gaming, travel, cross-border commerce
+# Stripe
+STRIPE_API_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
-## 🔑 Key Differentiators vs Stripe
+# Server
+PORT=3001
+NODE_ENV=development
+LOG_LEVEL=debug
+```
 
-| Dimension | Stripe | Agentic Payment System |
-|-----------|--------|------------------------|
-| Product shape | APIs + dashboard + rules | Agents + playbooks + verifiable mandates |
-| Automation scope | Creation/confirmation, some routing | Full lifecycle: repair, reconciliation, disputes |
-| Decision style | Config/rules first | Controlled autonomy: explainable, rollbackable, auditable |
-| Responsibility | Multi-party boundaries | Explicit "agent responsibility model" |
-| Integration | Stripe ecosystem | PSP-agnostic overlay |
+## API Endpoints
 
-## 🛡️ Governance & Safety
+### Webhooks
 
-### Minimum Governance Checklist
+```
+POST /api/v1/webhooks/stripe/:tenant_id
+```
 
-- ✅ **Structured mandates** — amount/frequency/region/method/risk thresholds + versioning
-- ✅ **Three-step control** — Can we? → Should we? → Did we?
-- ✅ **Tamper-resistant audit logs** — traceable/exportable
-- ✅ **Gradual delegation** — recommend → approve → auto-execute
-- ✅ **Replay + sandbox** — offline evaluation before activation
-- ✅ **Escalation + circuit breakers** — auto-degrade to manual on anomalies
+Receives Stripe payment webhooks and queues for processing.
 
-## 🗓️ Roadmap Summary
+### Repairs
 
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **Phase 0** | W1–W2 | Core integrations + read-only insights |
-| **Phase 1** | W3–W6 | Recommendation mode (human-in-the-loop) |
-| **Phase 2** | W7–W10 | Limited auto-execution (low-risk actions) |
-| **Phase 3** | W11–W12 | Closed-loop hardening + scale readiness |
+```
+GET /api/v1/repairs           # List repair queue
+GET /api/v1/repairs/:id       # Get repair details
+```
 
-## 📄 License
+### Actions
 
-This project is currently private and under active development.
+```
+POST /api/v1/actions/:id/approve   # Approve pending action
+POST /api/v1/actions/:id/reject    # Reject pending action
+```
 
----
+### Configuration
 
-> *"Payments aren't a single API call; they're a 30–90 day stream of operational events. We make that stream autonomous, auditable, and intelligent."*
+```
+GET /api/v1/mandates    # List mandates
+GET /api/v1/playbooks   # List playbook rules
+```
+
+### Metrics
+
+```
+GET /api/v1/metrics     # Get recovery metrics
+```
+
+Returns:
+- At-risk MRR (sum of failed payment amounts)
+- Recovered MRR
+- Recovery rate percentage
+- Total failures and recovery counts
+
+## Database Schema
+
+Key tables:
+
+| Table | Purpose |
+|-------|---------|
+| `tenants` | Multi-tenant configuration |
+| `payment_events` | PSP webhook events (idempotent) |
+| `failure_classifications` | AI/rule-based failure analysis |
+| `mandates` | Merchant authorization policies |
+| `playbook_rules` | Action selection rules |
+| `actions` | Executed recovery actions |
+| `audit_log` | Immutable decision trail |
+| `circuit_breaker_status` | Failure rate tracking |
+
+## Failure Types
+
+| Type | Category | Description |
+|------|----------|-------------|
+| `insufficient_funds` | soft | Card has insufficient funds |
+| `bank_decline` | soft | Bank temporarily declined |
+| `card_declined` | soft | Generic card decline |
+| `card_expired` | hard | Card has expired |
+| `lost_card` | hard | Card reported lost |
+| `stolen_card` | hard | Card reported stolen |
+| `invalid_card` | hard | Invalid card details |
+| `risk_blocked` | risk | Blocked by fraud detection |
+
+## Action Types
+
+| Action | Description | Autonomy |
+|--------|-------------|----------|
+| `retry_soft_decline` | Retry payment with delay | auto/approve |
+| `send_outreach` | Send customer notification | approve/manual |
+| `escalate` | Escalate to human agent | manual |
+| `create_ticket` | Create support ticket | auto |
+
+## Autonomy Modes
+
+- **auto**: Execute immediately without human approval
+- **approve**: Queue for human approval before execution
+- **manual**: Requires human to manually trigger execution
+
+## Circuit Breaker
+
+The system implements a circuit breaker pattern:
+
+- Tracks failure rates per action type
+- Opens circuit when failure rate exceeds threshold (default 20%)
+- Prevents cascading failures
+- Auto-recovers after timeout period
+
+## Security
+
+- Webhook signature verification
+- Rate limiting on API endpoints
+- Helmet security headers
+- CORS configuration
+- Append-only audit log
+- Hash chain for tamper detection
+
+## Development
+
+### Build
+
+```bash
+pnpm build
+```
+
+### Test
+
+```bash
+pnpm test
+```
+
+### Lint
+
+```bash
+pnpm lint
+```
+
+## Roadmap
+
+- [ ] BullMQ workers for async processing
+- [ ] Temporal workflows for durable execution
+- [ ] LLM integration for ambiguous classifications
+- [ ] Multi-PSP support (Adyen, Braintree)
+- [ ] Customer outreach templates
+- [ ] Real-time dashboard updates
+- [ ] Advanced analytics and reporting
+
+## Documentation
+
+- [Agentic Payment System Concept](./Agentic%20Payment%20System%20for%20Merchants%20-%20Polished%20Concept%20(EN).md)
+- [MVP Roadmap](./Payment%20Repair%20%26%20Dispute%20Autonomy%20MVP%20Roadmap%20(EN).md)
+
+## License
+
+MIT
