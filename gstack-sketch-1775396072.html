@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment Repair Console — Wireframe</title>
+<style>
+  /* Intentionally rough wireframe aesthetic */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, monospace; font-size: 13px; color: #222; background: #fff; }
+  
+  /* Nav */
+  .nav { border-bottom: 1px solid #ccc; padding: 10px 20px; display: flex; align-items: center; gap: 20px; background: #fafafa; }
+  .nav-brand { font-weight: bold; font-size: 14px; border: 1px solid #999; padding: 3px 8px; }
+  .nav-item { color: #555; cursor: pointer; }
+  .nav-item.active { color: #000; border-bottom: 2px solid #000; padding-bottom: 2px; }
+  .nav-status { margin-left: auto; font-size: 11px; color: #666; border: 1px solid #ddd; padding: 2px 8px; }
+
+  /* Layout */
+  .layout { display: flex; height: calc(100vh - 42px); }
+  
+  /* Sidebar */
+  .sidebar { width: 200px; border-right: 1px solid #ccc; padding: 12px; flex-shrink: 0; }
+  .sidebar-section { margin-bottom: 16px; }
+  .sidebar-label { font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .sidebar-item { padding: 5px 8px; cursor: pointer; border-radius: 2px; display: flex; justify-content: space-between; align-items: center; }
+  .sidebar-item:hover { background: #f0f0f0; }
+  .sidebar-item.active { background: #e8e8e8; font-weight: 500; }
+  .badge { background: #000; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 9px; }
+  .badge.warn { background: #666; }
+
+  /* Main content */
+  .main { flex: 1; overflow-y: auto; padding: 16px; }
+  
+  /* Page header */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .page-title { font-size: 15px; font-weight: 600; }
+  .page-meta { font-size: 11px; color: #666; }
+  .btn { border: 1px solid #999; padding: 4px 12px; cursor: pointer; font-size: 12px; background: #fff; }
+  .btn-primary { background: #000; color: #fff; border-color: #000; }
+  
+  /* Stats row */
+  .stats { display: flex; gap: 12px; margin-bottom: 16px; }
+  .stat-card { border: 1px solid #ddd; padding: 10px 14px; flex: 1; }
+  .stat-value { font-size: 22px; font-weight: 600; }
+  .stat-label { font-size: 11px; color: #666; margin-top: 2px; }
+  .stat-delta { font-size: 11px; color: #333; margin-top: 4px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; border: 1px dashed #ccc; padding: 8px; }
+  .filter-label { font-size: 11px; color: #888; }
+  .filter-chip { border: 1px solid #ccc; padding: 2px 8px; font-size: 11px; cursor: pointer; }
+  .filter-chip.active { border-color: #000; background: #000; color: #fff; }
+
+  /* Failure queue table */
+  .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid #000; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: #555; }
+  .table td { padding: 8px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .table tr:hover td { background: #f9f9f9; }
+  
+  /* Failure classification pills */
+  .pill { display: inline-block; font-size: 10px; padding: 2px 6px; border: 1px solid; border-radius: 2px; }
+  .pill-soft { border-color: #888; color: #444; }
+  .pill-hard { border-color: #333; color: #333; font-weight: 500; }
+  .pill-3ds { border-color: #555; color: #555; }
+  
+  /* Action suggestion */
+  .action-tag { font-size: 11px; color: #000; font-style: italic; }
+  .action-tag::before { content: "→ "; }
+  
+  /* Confidence bar */
+  .conf { display: inline-block; width: 40px; height: 6px; background: #eee; vertical-align: middle; position: relative; }
+  .conf-fill { position: absolute; left: 0; top: 0; height: 6px; background: #333; }
+  
+  /* Amount */
+  .amount { font-variant-numeric: tabular-nums; }
+  .amount-high { font-weight: 600; }
+  
+  /* Row actions */
+  .row-actions { display: flex; gap: 4px; }
+  .row-btn { border: 1px solid #ccc; padding: 2px 8px; font-size: 11px; cursor: pointer; background: #fff; }
+  .row-btn-approve { border-color: #000; background: #000; color: #fff; }
+  
+  /* Detail panel */
+  .detail-panel { width: 280px; border-left: 1px solid #ccc; padding: 14px; flex-shrink: 0; overflow-y: auto; }
+  .detail-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+  .detail-section { margin-bottom: 14px; }
+  .detail-section-label { font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .detail-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+  .detail-key { color: #666; }
+  .detail-val { font-weight: 500; }
+  .timeline { border-left: 2px solid #ddd; padding-left: 10px; margin-left: 4px; }
+  .timeline-item { margin-bottom: 8px; position: relative; }
+  .timeline-item::before { content: "●"; position: absolute; left: -15px; font-size: 8px; top: 2px; color: #999; }
+  .timeline-item-time { font-size: 10px; color: #888; }
+  .timeline-item-text { font-size: 11px; }
+  
+  /* Mandate badge */
+  .mandate-badge { border: 1px solid #999; font-size: 10px; padding: 3px 8px; display: flex; align-items: center; gap: 4px; background: #fafafa; margin-bottom: 8px; }
+  .mandate-badge::before { content: "🔒"; font-size: 9px; }
+  
+  /* Audit trail note */
+  .audit-note { border: 1px dashed #ccc; padding: 6px 8px; font-size: 10px; color: #777; background: #fafafa; }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-brand">AgentPay</div>
+  <span class="nav-item active">Repair Queue</span>
+  <span class="nav-item">Playbooks</span>
+  <span class="nav-item">Reconciliation</span>
+  <span class="nav-item">Disputes</span>
+  <span class="nav-item">Mandates</span>
+  <span class="nav-item">Audit Log</span>
+  <!-- Design decision: "Mandates" surfaces the L3 layer as first-class navigation -->
+  <div class="nav-status">● Live · Stripe + Adyen · 3 PSPs</div>
+</nav>
+
+<div class="layout">
+
+  <!-- Sidebar: merchant / playbook context -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Queue</div>
+      <!-- Design decision: categorize by urgency/action type, not by date -->
+      <div class="sidebar-item active">
+        <span>Needs Action</span>
+        <span class="badge">14</span>
+      </div>
+      <div class="sidebar-item">
+        <span>Awaiting Retry</span>
+        <span class="badge warn">31</span>
+      </div>
+      <div class="sidebar-item">
+        <span>Recovered Today</span>
+        <span class="badge">8</span>
+      </div>
+      <div class="sidebar-item">Hard Declines</div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-label">Playbooks Active</div>
+      <div class="sidebar-item">Soft Decline Retry ✓</div>
+      <div class="sidebar-item">Payday Timing ✓</div>
+      <div class="sidebar-item active">Card Updater ✗</div>
+      <div class="sidebar-item">Customer Outreach</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Autonomy Level</div>
+      <!-- Design decision: per-action autonomy toggle, not global -->
+      <div class="sidebar-item" style="font-size:11px;">
+        <span>Safe retries</span><span>Auto ✓</span>
+      </div>
+      <div class="sidebar-item" style="font-size:11px;">
+        <span>Outreach</span><span>Approve</span>
+      </div>
+      <div class="sidebar-item" style="font-size:11px;">
+        <span>Reroute PSP</span><span>Approve</span>
+      </div>
+      <div class="sidebar-item" style="font-size:11px;">
+        <span>Refund/cancel</span><span>Manual</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main: failure queue -->
+  <div class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Payment Repair Queue</div>
+        <div class="page-meta">14 items need action · Last updated 2 min ago</div>
+      </div>
+      <button class="btn btn-primary">Approve All Safe Actions (9)</button>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value">$47,240</div>
+        <div class="stat-label">At-risk MRR</div>
+        <div class="stat-delta">↑ $3,100 vs yesterday</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">68%</div>
+        <div class="stat-label">Recovery rate (30d)</div>
+        <div class="stat-delta">↑ 12pp vs manual baseline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">4.2h</div>
+        <div class="stat-label">Mean time to repair</div>
+        <div class="stat-delta">↓ from 3.1d manual</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">$8,920</div>
+        <div class="stat-label">Recovered this week</div>
+        <div class="stat-delta">8 successful recoveries</div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <span class="filter-chip active">All</span>
+      <span class="filter-chip">Soft decline</span>
+      <span class="filter-chip">Hard decline</span>
+      <span class="filter-chip">3DS failure</span>
+      <span class="filter-chip">High value ($500+)</span>
+      <span class="filter-chip">Subscription</span>
+    </div>
+
+    <!-- Failure queue -->
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Amount</th>
+          <th>Failure Type</th>
+          <th>Root Cause</th>
+          <th>Suggested Action</th>
+          <th>Confidence</th>
+          <th>Context</th>
+          <th style="width:140px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Row 1: soft decline, high confidence, auto-safe -->
+        <tr>
+          <td>
+            <div style="font-weight:500;">Acme Corp</div>
+            <div style="font-size:10px;color:#888;">Enterprise · Since 2021</div>
+          </td>
+          <td class="amount amount-high">$2,400/mo</td>
+          <td><span class="pill pill-soft">Soft decline</span></td>
+          <td style="font-size:11px;">Insufficient funds<br><span style="color:#888;font-size:10px;">Decline code: 51</span></td>
+          <td>
+            <span class="action-tag">Retry Thu (payday cycle)</span>
+          </td>
+          <td>
+            <!-- Design decision: show confidence bar + number -->
+            <span class="conf"><span class="conf-fill" style="width:90%;"></span></span>
+            <span style="font-size:11px;margin-left:4px;">91%</span>
+          </td>
+          <td style="font-size:10px;color:#888;">3 prior soft declines recovered<br>Same card, same cycle</td>
+          <td>
+            <div class="row-actions">
+              <button class="row-btn row-btn-approve">Approve</button>
+              <button class="row-btn">Override</button>
+            </div>
+          </td>
+        </tr>
+        
+        <!-- Row 2: auto-executing -->
+        <tr style="background:#f8f8f8;">
+          <td>
+            <div style="font-weight:500;">Globex Inc</div>
+            <div style="font-size:10px;color:#888;">Pro · Since 2023</div>
+          </td>
+          <td class="amount">$299/mo</td>
+          <td><span class="pill pill-soft">Soft decline</span></td>
+          <td style="font-size:11px;">Network timeout<br><span style="color:#888;font-size:10px;">Decline code: 96</span></td>
+          <td>
+            <span class="action-tag">Auto-retry in 4min</span>
+          </td>
+          <td>
+            <span class="conf"><span class="conf-fill" style="width:97%;"></span></span>
+            <span style="font-size:11px;margin-left:4px;">97%</span>
+          </td>
+          <td style="font-size:10px;color:#888;">⚡ Auto-executing (safe retry policy)</td>
+          <td style="font-size:11px;color:#666;">Auto · no action needed</td>
+        </tr>
+
+        <!-- Row 3: needs customer outreach -->
+        <tr>
+          <td>
+            <div style="font-weight:500;">Stark Industries</div>
+            <div style="font-size:10px;color:#888;">Enterprise · Since 2020</div>
+          </td>
+          <td class="amount amount-high">$5,800/mo</td>
+          <td><span class="pill pill-hard">Hard decline</span></td>
+          <td style="font-size:11px;">Card expired<br><span style="color:#888;font-size:10px;">Decline code: 54</span></td>
+          <td>
+            <span class="action-tag">Email AP contact + card updater</span>
+          </td>
+          <td>
+            <span class="conf"><span class="conf-fill" style="width:78%;"></span></span>
+            <span style="font-size:11px;margin-left:4px;">78%</span>
+          </td>
+          <td style="font-size:10px;color:#888;">Account contact: sarah@stark.com<br>Last opened email: 2 days ago</td>
+          <td>
+            <div class="row-actions">
+              <button class="row-btn row-btn-approve">Send Email</button>
+              <button class="row-btn">Override</button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Row 4: 3DS failure -->
+        <tr>
+          <td>
+            <div style="font-weight:500;">Wayne Enterprises</div>
+            <div style="font-size:10px;color:#888;">Growth · Since 2024</div>
+          </td>
+          <td class="amount">$890/mo</td>
+          <td><span class="pill pill-3ds">3DS failed</span></td>
+          <td style="font-size:11px;">Challenge abandoned<br><span style="color:#888;font-size:10px;">3DS status: A</span></td>
+          <td>
+            <span class="action-tag">Retry without 3DS (low risk)</span>
+          </td>
+          <td>
+            <span class="conf"><span class="conf-fill" style="width:62%;"></span></span>
+            <span style="font-size:11px;margin-left:4px;">62%</span>
+          </td>
+          <td style="font-size:10px;color:#888;">Mandate: 3DS optional for renewals ✓<br>Risk score: 22 (low)</td>
+          <td>
+            <div class="row-actions">
+              <button class="row-btn row-btn-approve">Approve</button>
+              <button class="row-btn">Override</button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Row 5: escalation needed -->
+        <tr>
+          <td>
+            <div style="font-weight:500;">LexCorp</div>
+            <div style="font-size:10px;color:#888;">Enterprise · Since 2019</div>
+          </td>
+          <td class="amount amount-high">$12,000/mo</td>
+          <td><span class="pill pill-hard">Hard decline</span></td>
+          <td style="font-size:11px;">Do not honor<br><span style="color:#888;font-size:10px;">Decline code: 05</span></td>
+          <td>
+            <span class="action-tag">Escalate to account team</span>
+          </td>
+          <td>
+            <span class="conf"><span class="conf-fill" style="width:35%;"></span></span>
+            <span style="font-size:11px;margin-left:4px;">35%</span>
+          </td>
+          <td style="font-size:10px;color:#888;color:#b00;">⚠ 3rd decline in 7 days<br>Contact: escalation required</td>
+          <td>
+            <div class="row-actions">
+              <button class="row-btn">Escalate</button>
+              <button class="row-btn">Dismiss</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Detail panel: selected row context -->
+  <div class="detail-panel">
+    <div class="detail-title">Acme Corp · $2,400/mo</div>
+    
+    <!-- Mandate badge — L3 layer visible here -->
+    <div class="mandate-badge">Mandate #M-2021-089 · Retry authorized up to 5×</div>
+    
+    <div class="detail-section">
+      <div class="detail-section-label">Failure Context</div>
+      <div class="detail-row"><span class="detail-key">Failure code</span><span class="detail-val">51 — Insufficient funds</span></div>
+      <div class="detail-row"><span class="detail-key">PSP</span><span class="detail-val">Stripe (US)</span></div>
+      <div class="detail-row"><span class="detail-key">Failed at</span><span class="detail-val">Apr 5, 02:14 AM</span></div>
+      <div class="detail-row"><span class="detail-key">Retry count</span><span class="detail-val">0 of 5 allowed</span></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Order / Account Context</div>
+      <div class="detail-row"><span class="detail-key">Subscription</span><span class="detail-val">Enterprise Plan</span></div>
+      <div class="detail-row"><span class="detail-key">Customer since</span><span class="detail-val">Jan 2021</span></div>
+      <div class="detail-row"><span class="detail-key">Prior failures</span><span class="detail-val">3 (all recovered)</span></div>
+      <div class="detail-row"><span class="detail-key">Support tickets</span><span class="detail-val">0 open</span></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Agent Reasoning</div>
+      <div class="audit-note">
+        Pattern matches: prior soft declines on this card recovered on day 3-4 of billing cycle. US payroll cycle suggests funds available Thu/Fri. Confidence: 91%. Mandate permits up to 5 retries. No fraud signals.
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Action Timeline</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-item-time">Apr 5, 02:14</div>
+          <div class="timeline-item-text">Payment failed (code 51)</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-time">Apr 5, 02:15</div>
+          <div class="timeline-item-text">Agent: failure classified, playbook triggered</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item-time">Apr 5, 02:15</div>
+          <div class="timeline-item-text">Recommended: retry Apr 7 (Thu, payroll cycle)</div>
+        </div>
+        <div class="timeline-item" style="color:#888;font-style:italic;">
+          <div class="timeline-item-time">Awaiting your approval</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
